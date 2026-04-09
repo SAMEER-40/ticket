@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { purchaseTicket } from "@/lib/api";
 import { CheckCircle, ChevronLeft, CreditCard } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useAuth } from "react-oidc-context";
+import { useAuth } from "@/auth/auth-context";
 import { useNavigate, useParams } from "react-router";
 
 const PurchaseTicketPage: React.FC = () => {

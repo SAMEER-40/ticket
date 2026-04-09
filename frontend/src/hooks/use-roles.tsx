@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
-import { useAuth } from "react-oidc-context";
-import { jwtDecode } from "jwt-decode";
+import { useAuth } from "@/auth/auth-context";
 
 interface UseRolesReturn {
   isLoading: boolean;
@@ -8,12 +7,6 @@ interface UseRolesReturn {
   isOrganizer: boolean;
   isAttendee: boolean;
   isStaff: boolean;
-}
-
-interface JwtPayload {
-  realm_access?: {
-    roles?: string[];
-  };
 }
 
 export const useRoles = (): UseRolesReturn => {
@@ -27,7 +20,7 @@ export const useRoles = (): UseRolesReturn => {
   useEffect(() => {
     setIsLoading(true);
 
-    if (isAuthLoading || !user?.access_token) {
+    if (isAuthLoading || !user) {
       setRoles([]);
       setIsOrganizer(false);
       setIsAttendee(false);
@@ -37,8 +30,7 @@ export const useRoles = (): UseRolesReturn => {
     }
 
     try {
-      const payload = jwtDecode<JwtPayload>(user?.access_token);
-      const allRoles = payload.realm_access?.roles || [];
+      const allRoles = user.roles || [];
       const filteredRoles = allRoles.filter((role) => role.startsWith("ROLE_"));
       setRoles(filteredRoles);
       setIsOrganizer(filteredRoles.includes("ROLE_ORGANIZER"));
@@ -53,7 +45,7 @@ export const useRoles = (): UseRolesReturn => {
     } finally {
       setIsLoading(false);
     }
-  }, [isAuthLoading, user?.access_token]);
+  }, [isAuthLoading, user]);
 
   return {
     isLoading,

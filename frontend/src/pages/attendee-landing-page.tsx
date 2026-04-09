@@ -1,4 +1,4 @@
-import { useAuth } from "react-oidc-context";
+import { useAuth } from "@/auth/auth-context";
 import { Button } from "../components/ui/button";
 import { useNavigate } from "react-router";
 import { Input } from "@/components/ui/input";
@@ -33,8 +33,7 @@ import { SimplePagination } from "@/components/simple-pagination";
 import { motion } from "framer-motion";
 
 const AttendeeLandingPage: React.FC = () => {
-  const { isAuthenticated, isLoading, signinRedirect, signoutRedirect } =
-    useAuth();
+  const { isAuthenticated, isLoading, logout } = useAuth();
 
   const navigate = useNavigate();
 
@@ -43,10 +42,10 @@ const AttendeeLandingPage: React.FC = () => {
     SpringBootPagination<PublishedEventSummary> | undefined
   >();
   const [error, setError] = useState<string | undefined>();
-  const [query, setQuery] = useState<string | undefined>();
+  const [query, setQuery] = useState("");
 
   useEffect(() => {
-    if (query && query.length > 0) {
+    if (query.length > 0) {
       queryPublishedEvents();
     } else {
       refreshPublishedEvents();
@@ -68,13 +67,13 @@ const AttendeeLandingPage: React.FC = () => {
   };
 
   const queryPublishedEvents = async () => {
-    if (!query) {
+    if (!query.trim()) {
       await refreshPublishedEvents();
       return;
     }
 
     try {
-      setPublishedEvents(await searchPublishedEvents(query, page));
+      setPublishedEvents(await searchPublishedEvents(query.trim(), page));
     } catch (err) {
       if (err instanceof Error) {
         setError(err.message);
@@ -123,14 +122,14 @@ const AttendeeLandingPage: React.FC = () => {
               <Button
                 variant="outline"
                 className="cursor-pointer"
-                onClick={() => signoutRedirect()}
+                onClick={() => logout()}
               >
                 Log out
               </Button>
             </div>
           ) : (
             <div className="flex gap-4">
-              <Button className="cursor-pointer" onClick={() => signinRedirect()}>
+              <Button className="cursor-pointer" onClick={() => navigate("/login")}>
                 Log in
               </Button>
             </div>

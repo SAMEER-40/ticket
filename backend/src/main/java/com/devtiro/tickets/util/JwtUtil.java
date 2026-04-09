@@ -1,14 +1,14 @@
 package com.devtiro.tickets.util;
 
+import com.devtiro.tickets.domain.auth.AppUserPrincipal;
 import java.util.UUID;
-import org.springframework.security.oauth2.jwt.Jwt;
 
 public final class JwtUtil {
   private JwtUtil(){
   }
 
-  public static UUID parseUserId(Jwt jwt) {
-    return UUID.fromString(jwt.getSubject());
+  public static UUID parseUserId(AppUserPrincipal principal) {
+    return principal.getId();
   }
 
 

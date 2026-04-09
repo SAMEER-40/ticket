@@ -1,5 +1,5 @@
 import { ReactNode } from "react";
-import { useAuth } from "react-oidc-context";
+import { useAuth } from "@/auth/auth-context";
 import { Navigate, useLocation } from "react-router";
 
 interface ProtectedRouteProperties {

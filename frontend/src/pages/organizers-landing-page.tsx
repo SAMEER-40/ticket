@@ -1,12 +1,11 @@
 import { Button } from "@/components/ui/button";
 import { PageTransition } from "@/components/layout/page-transition";
 import { ArrowRight, BarChart3, CalendarCheck2, ShieldCheck, Ticket } from "lucide-react";
-import { useAuth } from "react-oidc-context";
+import { useAuth } from "@/auth/auth-context";
 import { useNavigate } from "react-router";
 
 const OrganizersLandingPage: React.FC = () => {
-  const { isAuthenticated, isLoading, signinRedirect, signoutRedirect } =
-    useAuth();
+  const { isAuthenticated, isLoading, logout } = useAuth();
 
   const navigate = useNavigate();
 
@@ -29,20 +28,20 @@ const OrganizersLandingPage: React.FC = () => {
             >
               Dashboard
             </Button>
-            <Button
-              variant="outline"
-              className="cursor-pointer"
-              onClick={() => signoutRedirect()}
-            >
-              Log out
-            </Button>
-          </div>
-        ) : (
-          <div className="flex gap-4">
-            <Button className="cursor-pointer" onClick={() => signinRedirect()}>
-              Log in
-            </Button>
-          </div>
+              <Button
+                variant="outline"
+                className="cursor-pointer"
+                onClick={() => logout()}
+              >
+                Log out
+              </Button>
+            </div>
+          ) : (
+            <div className="flex gap-4">
+              <Button className="cursor-pointer" onClick={() => navigate("/login")}>
+                Log in
+              </Button>
+            </div>
         )}
       </div>
 

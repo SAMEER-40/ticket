@@ -1,4 +1,4 @@
-import { useAuth } from "react-oidc-context";
+import { useAuth } from "@/auth/auth-context";
 import { Avatar, AvatarFallback } from "./ui/avatar";
 import {
   DropdownMenu,
@@ -14,7 +14,7 @@ import { Link, useNavigate } from "react-router";
 import { motion } from "framer-motion";
 
 const NavBar: React.FC = () => {
-  const { user, signoutRedirect } = useAuth();
+  const { user, logout } = useAuth();
   const { isOrganizer } = useRoles();
   const navigate = useNavigate();
 
@@ -62,7 +62,7 @@ const NavBar: React.FC = () => {
           <DropdownMenuTrigger>
             <Avatar className="h-8 w-8 border border-slate-300">
               <AvatarFallback className="bg-slate-200 text-slate-800">
-                {user?.profile?.preferred_username?.slice(0, 2).toUpperCase()}
+                {user?.username?.slice(0, 2).toUpperCase()}
               </AvatarFallback>
             </Avatar>
           </DropdownMenuTrigger>
@@ -71,13 +71,13 @@ const NavBar: React.FC = () => {
             align="end"
           >
             <DropdownMenuLabel className="font-normal">
-              <p className="text-sm font-medium">{user?.profile?.preferred_username}</p>
-              <p className="text-sm text-slate-500">{user?.profile?.email}</p>
+              <p className="text-sm font-medium">{user?.username}</p>
+              <p className="text-sm text-slate-500">{user?.email}</p>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem
               className="hover:bg-slate-100"
-              onClick={() => signoutRedirect()}
+              onClick={() => logout()}
             >
               <LogOut />
               <span>Log Out</span>

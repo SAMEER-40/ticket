@@ -2,13 +2,12 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./index.css";
 import AttendeeLandingPage from "./pages/attendee-landing-page.tsx";
-import { AuthProvider } from "react-oidc-context";
+import { AuthProvider } from "./auth/auth-context";
 import { createBrowserRouter, RouterProvider } from "react-router";
 import OrganizersLandingPage from "./pages/organizers-landing-page.tsx";
 import DashboardManageEventPage from "./pages/dashboard-manage-event-page.tsx";
 import LoginPage from "./pages/login-page.tsx";
 import ProtectedRoute from "./components/protected-route.tsx";
-import CallbackPage from "./pages/callback-page.tsx";
 import DashboardListEventsPage from "./pages/dashboard-list-events-page.tsx";
 import PublishedEventsPage from "./pages/published-events-page.tsx";
 import PurchaseTicketPage from "./pages/purchase-ticket-page.tsx";
@@ -21,10 +20,6 @@ const router = createBrowserRouter([
   {
     path: "/",
     Component: AttendeeLandingPage,
-  },
-  {
-    path: "/callback",
-    Component: CallbackPage,
   },
   {
     path: "/login",
@@ -104,18 +99,9 @@ const router = createBrowserRouter([
   },
 ]);
 
-const oidcConfig = {
-  authority:
-    import.meta.env.VITE_OIDC_AUTHORITY ??
-    "http://localhost:9090/realms/event-ticket-platform",
-  client_id: import.meta.env.VITE_OIDC_CLIENT_ID ?? "event-ticket-platform-app",
-  redirect_uri: `${globalThis.location.origin}/callback`,
-  post_logout_redirect_uri: globalThis.location.origin,
-};
-
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <AuthProvider {...oidcConfig}>
+    <AuthProvider>
       <RouterProvider router={router} />
     </AuthProvider>
   </StrictMode>,

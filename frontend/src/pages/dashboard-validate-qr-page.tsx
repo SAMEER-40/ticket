@@ -11,7 +11,7 @@ import {
 import { AlertCircle, Check, ChevronLeft, X } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { validateTicket } from "@/lib/api";
-import { useAuth } from "react-oidc-context";
+import { useAuth } from "@/auth/auth-context";
 import { useNavigate } from "react-router";
 
 const DashboardValidateQrPage: React.FC = () => {

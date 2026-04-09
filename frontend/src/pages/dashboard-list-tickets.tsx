@@ -8,7 +8,7 @@ import { SpringBootPagination, TicketSummary } from "@/domain/domain";
 import { listTickets } from "@/lib/api";
 import { AlertCircle, DollarSign, Tag, Ticket } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useAuth } from "react-oidc-context";
+import { useAuth } from "@/auth/auth-context";
 import { Link } from "react-router";
 
 const DashboardListTickets: React.FC = () => {

@@ -36,7 +36,7 @@ import {
   Trash,
 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useAuth } from "react-oidc-context";
+import { useAuth } from "@/auth/auth-context";
 import { Link } from "react-router";
 
 const DashboardListEventsPage: React.FC = () => {

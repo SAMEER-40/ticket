@@ -49,7 +49,7 @@ import {
   Trash,
 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useAuth } from "react-oidc-context";
+import { useAuth } from "@/auth/auth-context";
 import { useNavigate, useParams } from "react-router";
 
 interface DateTimeSelectProperties {
