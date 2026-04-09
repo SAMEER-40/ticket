@@ -1,10 +1,13 @@
 import { TicketDetails, TicketStatus } from "@/domain/domain";
+import { PageTransition } from "@/components/layout/page-transition";
+import NavBar from "@/components/nav-bar";
+import { Button } from "@/components/ui/button";
 import { getTicket, getTicketQr } from "@/lib/api";
 import { format } from "date-fns";
-import { Calendar, DollarSign, MapPin, Tag } from "lucide-react";
+import { Calendar, ChevronLeft, DollarSign, MapPin, Tag } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useAuth } from "react-oidc-context";
-import { useParams } from "react-router";
+import { useNavigate, useParams } from "react-router";
 
 const DashboardViewTicketPage: React.FC = () => {
   const [ticket, setTicket] = useState<TicketDetails | undefined>();
@@ -14,6 +17,7 @@ const DashboardViewTicketPage: React.FC = () => {
 
   const { id } = useParams();
   const { isLoading, user } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (isLoading || !user?.access_token || !id) {
@@ -65,9 +69,16 @@ const DashboardViewTicketPage: React.FC = () => {
   }
 
   return (
-    <div className="bg-black min-h-screen text-white flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        <div className="relative bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 rounded-3xl p-8 shadow-2xl">
+    <div className="app-shell min-h-screen text-slate-900">
+      <NavBar />
+      <div className="mx-auto w-full max-w-md px-4 pt-6">
+        <Button variant="outline" onClick={() => navigate(-1)}>
+          <ChevronLeft className="size-4" /> Back
+        </Button>
+      </div>
+      <PageTransition className="mx-auto flex w-full max-w-lg items-center justify-center px-4 py-8 md:py-12">
+        <div className="w-full">
+        <div className="relative rounded-3xl bg-gradient-to-br from-slate-900 via-indigo-900 to-slate-950 p-10 shadow-2xl">
           {/* Status */}
           <div className="bg-black/30 backdrop-blur-sm px-3 py-1 rounded-full mb-8 text-center">
             <span
@@ -145,6 +156,7 @@ const DashboardViewTicketPage: React.FC = () => {
           </div>
         </div>
       </div>
+      </PageTransition>
     </div>
   );
 };

@@ -1,4 +1,6 @@
 import NavBar from "@/components/nav-bar";
+import { PageHeader } from "@/components/layout/page-header";
+import { PageTransition } from "@/components/layout/page-transition";
 import { SimplePagination } from "@/components/simple-pagination";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -42,35 +44,37 @@ const DashboardListTickets: React.FC = () => {
 
   if (error) {
     return (
-      <div className="bg-black min-h-screen text-white">
+      <div className="app-shell">
         <NavBar />
-        <Alert variant="destructive" className="bg-gray-900 border-red-700">
-          <AlertCircle className="h-4 w-4" />
-          <AlertTitle>Error</AlertTitle>
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
+        <div className="page-wrap">
+          <Alert variant="destructive" className="surface-card border-red-300 bg-red-50 text-red-900">
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>Error</AlertTitle>
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="bg-black min-h-screen text-white">
+    <div className="app-shell">
       <NavBar />
 
-      {/* Title */}
-      <div className="py-8 px-4">
-        <h1 className="text-2xl font-bold">Your Tickets</h1>
-        <p>Tickets you have purchased</p>
-      </div>
+      <PageTransition className="page-wrap">
+        <PageHeader
+          title="Your Tickets"
+          description="All purchased tickets in one place."
+        />
 
-      <div className="max-w-lg mx-auto">
+      <div className="mx-auto grid max-w-4xl gap-4 md:grid-cols-2">
         {tickets?.content.map((ticketItem) => (
           <Link to={`/dashboard/tickets/${ticketItem.id}`}>
-            <Card key={ticketItem.id} className="bg-gray-900 text-white">
+            <Card key={ticketItem.id} className="surface-card h-full text-slate-900 transition-all duration-200 hover:-translate-y-0.5">
               <CardHeader>
                 <div className="flex justify-between">
                   <div className="flex items-center gap-2">
-                    <Ticket className="h-5 w-5 text-gray-400" />
+                    <Ticket className="h-5 w-5 text-slate-500" />
                     <h3 className="font-bold text-xl">
                       {ticketItem.ticketType.name}
                     </h3>
@@ -81,16 +85,16 @@ const DashboardListTickets: React.FC = () => {
               <CardContent className="space-y-4">
                 {/* Price */}
                 <div className="flex items-center gap-2">
-                  <DollarSign className="h-5 w-5 text-gray-400" />
+                  <DollarSign className="h-5 w-5 text-slate-500" />
                   <p className="font-medium">${ticketItem.ticketType.price}</p>
                 </div>
 
                 {/* Ticket ID */}
                 <div className="flex items-center gap-2">
-                  <Tag className="h-5 w-5 text-gray-400" />
+                  <Tag className="h-5 w-5 text-slate-500" />
                   <div>
                     <h4 className="font-medium">Ticket ID</h4>
-                    <p className="text-gray-400 font-mono text-sm">
+                    <p className="font-mono text-sm text-slate-600">
                       {ticketItem.id}
                     </p>
                   </div>
@@ -100,6 +104,7 @@ const DashboardListTickets: React.FC = () => {
           </Link>
         ))}
       </div>
+      </PageTransition>
       <div className="flex justify-center py-8">
         {tickets && (
           <SimplePagination pagination={tickets} onPageChange={setPage} />

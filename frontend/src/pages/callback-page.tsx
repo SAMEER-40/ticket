@@ -16,7 +16,11 @@ const CallbackPage: React.FC = () => {
       if (redirectPath) {
         localStorage.removeItem("redirectPath");
         navigate(redirectPath);
+      } else {
+        navigate("/organizers");
       }
+    } else {
+      navigate("/login", { replace: true });
     }
   }, [isLoading, isAuthenticated, navigate]);
 

@@ -1,4 +1,5 @@
 import RandomEventImage from "@/components/random-event-image";
+import { PageTransition } from "@/components/layout/page-transition";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -7,7 +8,7 @@ import {
   PublishedEventTicketTypeDetails,
 } from "@/domain/domain";
 import { getPublishedEvent } from "@/lib/api";
-import { AlertCircle, MapPin } from "lucide-react";
+import { AlertCircle, ChevronLeft, MapPin } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useAuth } from "react-oidc-context";
 import { Link, useNavigate, useParams } from "react-router";
@@ -53,8 +54,8 @@ const PublishedEventsPage: React.FC = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-black text-white">
-        <Alert variant="destructive" className="bg-gray-900 border-red-700">
+      <div className="app-shell min-h-screen text-slate-900">
+        <Alert variant="destructive" className="mx-auto mt-8 max-w-3xl border-red-300 bg-red-50 text-red-900">
           <AlertCircle className="h-4 w-4" />
           <AlertTitle>Error</AlertTitle>
           <AlertDescription>{error}</AlertDescription>
@@ -68,9 +69,12 @@ const PublishedEventsPage: React.FC = () => {
   }
 
   return (
-    <div className="bg-black min-h-screen text-white">
+    <div className="app-shell min-h-screen text-slate-900">
       {/* Nav */}
-      <div className="flex justify-end p-4 container mx-auto">
+      <div className="flex justify-between p-4 container mx-auto">
+        <Button variant="outline" onClick={() => navigate(-1)}>
+          <ChevronLeft className="size-4" /> Back
+        </Button>
         {isAuthenticated ? (
           <div className="flex gap-4">
             <Button
@@ -80,6 +84,7 @@ const PublishedEventsPage: React.FC = () => {
               Dashboard
             </Button>
             <Button
+              variant="outline"
               className="cursor-pointer"
               onClick={() => signoutRedirect()}
             >
@@ -95,19 +100,19 @@ const PublishedEventsPage: React.FC = () => {
         )}
       </div>
 
-      <main className="container mx-auto px-4 py-16">
+      <PageTransition className="container mx-auto px-4 py-16">
         {/* Header */}
         <div className="grid grid-cols-2 gap-8 max-w-5xl mx-auto mb-8">
           {/* Left Column */}
           <div className="space-y-4">
             <h1 className="text-3xl font-bold">{publishedEvent?.name}</h1>
-            <p className="text-lg flex gap-2 text-gray-300">
+            <p className="text-lg flex gap-2 text-slate-600">
               <MapPin />
               {publishedEvent?.venue}
             </p>
           </div>
           {/* Right Column */}
-          <div className="bg-gray-600 rounded-lg w-full max-w-sm overflow-hidden">
+          <div className="surface-card w-full max-w-sm overflow-hidden">
             <RandomEventImage />
           </div>
         </div>
@@ -118,7 +123,7 @@ const PublishedEventsPage: React.FC = () => {
           <div className="w-1/2">
             {publishedEvent?.ticketTypes?.map((ticketType) => (
               <Card
-                className="bg-gray-800 border-gray-600 hover:bg-gray-700 text-white cursor-pointer gap-0 mb-2"
+                className="surface-card cursor-pointer gap-0 mb-2 border-slate-200 text-slate-900 transition-all hover:-translate-y-0.5"
                 key={ticketType.id}
                 onClick={() => setSelectedTicketType(ticketType)}
               >
@@ -131,7 +136,7 @@ const PublishedEventsPage: React.FC = () => {
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-gray-300 text-sm">
+                  <p className="text-slate-600 text-sm">
                     {ticketType.description}
                   </p>
                 </CardContent>
@@ -140,8 +145,8 @@ const PublishedEventsPage: React.FC = () => {
           </div>
 
           {/* Right */}
-          <div className="w-1/2 text-white">
-            <div className="bg-gray-800 rounded-lg p-6 border border-gray-600">
+          <div className="w-1/2 text-slate-900">
+            <div className="surface-card rounded-lg border-slate-200 p-6">
               <h2 className="text-2xl font-bold">{selectedTicketType?.name}</h2>
               <div className="mb-6">
                 <span className="text-3xl font-bold">
@@ -149,21 +154,21 @@ const PublishedEventsPage: React.FC = () => {
                 </span>
               </div>
               <div className="mb-6">
-                <p className="text-gray-300">
-                  {selectedTicketType?.description}
-                </p>
+                  <p className="text-slate-600">
+                    {selectedTicketType?.description}
+                  </p>
+                </div>
+                <Link
+                  to={`/events/${publishedEvent?.id}/purchase/${selectedTicketType?.id}`}
+                >
+                  <Button className="w-full cursor-pointer">
+                    Purchase Ticket
+                  </Button>
+                </Link>
               </div>
-              <Link
-                to={`/events/${publishedEvent?.id}/purchase/${selectedTicketType?.id}`}
-              >
-                <Button className="w-full bg-purple-600 hover:bg-purple-700 cursor-pointer">
-                  Purchase Ticket
-                </Button>
-              </Link>
             </div>
-          </div>
         </div>
-      </main>
+      </PageTransition>
     </div>
   );
 };

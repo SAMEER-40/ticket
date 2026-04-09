@@ -1,4 +1,6 @@
 import NavBar from "@/components/nav-bar";
+import { PageHeader } from "@/components/layout/page-header";
+import { PageTransition } from "@/components/layout/page-transition";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -57,6 +59,7 @@ interface DateTimeSelectProperties {
   setTime: (time: string) => void;
   enabled: boolean;
   setEnabled: (isEnabled: boolean) => void;
+  timeError?: string;
 }
 
 const DateTimeSelect: React.FC<DateTimeSelectProperties> = ({
@@ -66,6 +69,7 @@ const DateTimeSelect: React.FC<DateTimeSelectProperties> = ({
   setTime,
   enabled,
   setEnabled,
+  timeError,
 }) => {
   return (
     <div className="flex gap-2 items-center">
@@ -114,6 +118,7 @@ const DateTimeSelect: React.FC<DateTimeSelectProperties> = ({
           </div>
         </div>
       )}
+      {timeError && <p className="text-xs text-red-600">{timeError}</p>}
     </div>
   );
 };
@@ -181,6 +186,9 @@ const DashboardManageEventPage: React.FC = () => {
   const [eventSalesDateEnabled, setEventSalesDateEnabled] = useState(false);
 
   const [error, setError] = useState<string | undefined>();
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [ticketTypeErrors, setTicketTypeErrors] = useState<Record<string, string>>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const updateField = (field: keyof EventData, value: any) => {
@@ -363,24 +371,99 @@ const DashboardManageEventPage: React.FC = () => {
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(undefined);
+    setFieldErrors({});
+
+    if (isSubmitting) {
+      return;
+    }
 
     if (isLoading || !user || !user.access_token) {
       console.error("User not found!");
       return;
     }
 
-    if (isEditMode) {
-      if (!eventData.id) {
-        setError("Event does not have an ID");
-        return;
+    const nextFieldErrors: Record<string, string> = {};
+    if (!eventData.name.trim() || eventData.name.trim().length < 3) {
+      nextFieldErrors.name = "Event name must be at least 3 characters.";
+    }
+
+    if (!eventData.venueDetails.trim() || eventData.venueDetails.trim().length < 10) {
+      nextFieldErrors.venue = "Venue details should be at least 10 characters.";
+    }
+
+    if (eventDateEnabled) {
+      if (!eventData.startDate || !eventData.startTime) {
+        nextFieldErrors.start = "Event start date and time are required.";
       }
-      await handleEventUpdateSubmit(user.access_token, eventData.id);
-    } else {
-      await handleEventCreateSubmit(user.access_token);
+      if (!eventData.endDate || !eventData.endTime) {
+        nextFieldErrors.end = "Event end date and time are required.";
+      }
+      if (
+        eventData.startDate &&
+        eventData.startTime &&
+        eventData.endDate &&
+        eventData.endTime
+      ) {
+        const start = combineDateTime(eventData.startDate, eventData.startTime);
+        const end = combineDateTime(eventData.endDate, eventData.endTime);
+        if (start >= end) {
+          nextFieldErrors.end = "Event end must be after event start.";
+        }
+      }
+    }
+
+    if (eventSalesDateEnabled) {
+      if (!eventData.salesStartDate || !eventData.salesStartTime) {
+        nextFieldErrors.salesStart = "Sales start date and time are required.";
+      }
+      if (!eventData.salesEndDate || !eventData.salesEndTime) {
+        nextFieldErrors.salesEnd = "Sales end date and time are required.";
+      }
+      if (
+        eventData.salesStartDate &&
+        eventData.salesStartTime &&
+        eventData.salesEndDate &&
+        eventData.salesEndTime
+      ) {
+        const salesStart = combineDateTime(
+          eventData.salesStartDate,
+          eventData.salesStartTime,
+        );
+        const salesEnd = combineDateTime(eventData.salesEndDate, eventData.salesEndTime);
+        if (salesStart >= salesEnd) {
+          nextFieldErrors.salesEnd = "Sales end must be after sales start.";
+        }
+      }
+    }
+
+    if (!eventData.ticketTypes.length) {
+      nextFieldErrors.ticketTypes = "Add at least one ticket type.";
+    }
+
+    if (Object.keys(nextFieldErrors).length > 0) {
+      setFieldErrors(nextFieldErrors);
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      if (isEditMode) {
+        if (!eventData.id) {
+          setError("Event does not have an ID");
+          return;
+        }
+        await handleEventUpdateSubmit(user.access_token, eventData.id);
+      } else {
+        await handleEventCreateSubmit(user.access_token);
+      }
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   const handleAddTicketType = () => {
+    setTicketTypeErrors({});
     setCurrentTicketType({
       id: undefined,
       name: "",
@@ -395,6 +478,30 @@ const DashboardManageEventPage: React.FC = () => {
     if (!currentTicketType) {
       return;
     }
+
+    const nextTicketTypeErrors: Record<string, string> = {};
+    if (!currentTicketType.name.trim() || currentTicketType.name.trim().length < 2) {
+      nextTicketTypeErrors.name = "Ticket type name must be at least 2 characters.";
+    }
+    if (!Number.isFinite(currentTicketType.price) || currentTicketType.price < 0) {
+      nextTicketTypeErrors.price = "Price must be 0 or greater.";
+    }
+    if (
+      currentTicketType.totalAvailable !== undefined &&
+      (!Number.isFinite(currentTicketType.totalAvailable) || currentTicketType.totalAvailable < 1)
+    ) {
+      nextTicketTypeErrors.totalAvailable = "Total available must be at least 1.";
+    }
+    if (!currentTicketType.description.trim() || currentTicketType.description.trim().length < 5) {
+      nextTicketTypeErrors.description = "Description must be at least 5 characters.";
+    }
+
+    if (Object.keys(nextTicketTypeErrors).length > 0) {
+      setTicketTypeErrors(nextTicketTypeErrors);
+      return;
+    }
+
+    setTicketTypeErrors({});
 
     const newTicketTypes = [...eventData.ticketTypes];
 
@@ -417,6 +524,7 @@ const DashboardManageEventPage: React.FC = () => {
   };
 
   const handleEditTicketType = (ticketType: TicketTypeData) => {
+    setTicketTypeErrors({});
     setCurrentTicketType(ticketType);
     setDialogOpen(true);
   };
@@ -432,31 +540,37 @@ const DashboardManageEventPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="app-shell">
       <NavBar />
-      <div className="container mx-auto px-4 py-8 max-w-xl">
+      <PageTransition className="page-wrap max-w-3xl">
+        <PageHeader
+          title={isEditMode ? "Edit Event" : "Create a New Event"}
+          description={
+            isEditMode
+              ? "Update details and ticket setup for this event."
+              : "Fill in details to launch your event page and ticket sales."
+          }
+          showBack
+        />
         <div className="mb-6">
-          <h1 className="text-2xl font-bold">
-            {isEditMode ? "Edit Event" : "Create a New Event"}
-          </h1>
           {isEditMode ? (
             <>
               {eventData.id && (
-                <p className="text-sm text-gray-400">ID: {eventData.id}</p>
+                <p className="text-sm text-slate-500">ID: {eventData.id}</p>
               )}
               {eventData.createdAt && (
-                <p className="text-sm text-gray-400">
+                <p className="text-sm text-slate-500">
                   Created At: {format(eventData.createdAt, "PPP")}
                 </p>
               )}
               {eventData.updatedAt && (
-                <p className="text-sm text-gray-400">
+                <p className="text-sm text-slate-500">
                   Updated At: {format(eventData.updatedAt, "PPP")}
                 </p>
               )}
             </>
           ) : (
-            <p>Fill out the form below to create your event</p>
+            <p className="text-slate-600">Fill out the form below to create your event.</p>
           )}
         </div>
 
@@ -469,14 +583,17 @@ const DashboardManageEventPage: React.FC = () => {
               </label>
               <Input
                 id="event-name"
-                className="bg-gray-900 border-gray-700 text-white"
+                className="bg-white"
                 placeholder="Event Name"
                 value={eventData.name}
                 onChange={(e) => updateField("name", e.target.value)}
                 required
               />
+              {fieldErrors.name && (
+                <p className="mt-1 text-xs text-red-600">{fieldErrors.name}</p>
+              )}
             </div>
-            <p className="text-gray-400 text-xs">
+            <p className="text-slate-500 text-xs">
               This is the public name of your event.
             </p>
           </div>
@@ -491,8 +608,9 @@ const DashboardManageEventPage: React.FC = () => {
               setTime={(time) => updateField("startTime", time)}
               enabled={eventDateEnabled}
               setEnabled={setEventDateEnabled}
+              timeError={fieldErrors.start}
             />
-            <p className="text-gray-400 text-xs">
+            <p className="text-slate-500 text-xs">
               The date and time that the event starts.
             </p>
           </div>
@@ -507,8 +625,9 @@ const DashboardManageEventPage: React.FC = () => {
               setTime={(time) => updateField("endTime", time)}
               enabled={eventDateEnabled}
               setEnabled={setEventDateEnabled}
+              timeError={fieldErrors.end}
             />
-            <p className="text-gray-400 text-xs">
+            <p className="text-slate-500 text-xs">
               The date and time that the event ends.
             </p>
           </div>
@@ -519,11 +638,15 @@ const DashboardManageEventPage: React.FC = () => {
             </label>
             <Textarea
               id="venue-details"
-              className="bg-gray-900 border-gray-700 min-h-[100px]"
+              className="bg-white min-h-[100px]"
               value={eventData.venueDetails}
               onChange={(e) => updateField("venueDetails", e.target.value)}
+              required
             />
-            <p className="text-gray-400 text-xs">
+            {fieldErrors.venue && (
+              <p className="mt-1 text-xs text-red-600">{fieldErrors.venue}</p>
+            )}
+            <p className="text-slate-500 text-xs">
               Details about the venue, please include as much detail as
               possible.
             </p>
@@ -539,8 +662,9 @@ const DashboardManageEventPage: React.FC = () => {
               setTime={(time) => updateField("salesStartTime", time)}
               enabled={eventSalesDateEnabled}
               setEnabled={setEventSalesDateEnabled}
+              timeError={fieldErrors.salesStart}
             />
-            <p className="text-gray-400 text-xs">
+            <p className="text-slate-500 text-xs">
               The date and time that ticket are available to purchase for the
               event.
             </p>
@@ -556,8 +680,9 @@ const DashboardManageEventPage: React.FC = () => {
               setTime={(time) => updateField("salesEndTime", time)}
               enabled={eventSalesDateEnabled}
               setEnabled={setEventSalesDateEnabled}
+              timeError={fieldErrors.salesEnd}
             />
-            <p className="text-gray-400 text-xs">
+            <p className="text-slate-500 text-xs">
               The date and time that ticket are available to purchase for the
               event.
             </p>
@@ -565,7 +690,7 @@ const DashboardManageEventPage: React.FC = () => {
 
           {/* Ticket Types */}
           <div>
-            <Card className="bg-gray-900 border-gray-700 text-white">
+            <Card className="surface-card border-slate-200 text-slate-900">
               <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
                 <CardHeader>
                   <div className="flex justify-between">
@@ -576,7 +701,7 @@ const DashboardManageEventPage: React.FC = () => {
                     <Button
                       type="button"
                       onClick={() => handleAddTicketType()}
-                      className="bg-gray-800 border-gray-700 text-white"
+                        className="bg-white"
                     >
                       <Plus /> Add Ticket Type
                     </Button>
@@ -586,7 +711,7 @@ const DashboardManageEventPage: React.FC = () => {
                 <CardContent className="space-y-2">
                   {eventData.ticketTypes.map((ticketType) => {
                     return (
-                      <div className="bg-gray-700 w-full p-4 rounded-lg border-gray-600">
+                       <div className="w-full rounded-lg border border-slate-200 bg-slate-50 p-4">
                         <div className="flex justify-between items-center">
                           {/* Left */}
                           <div>
@@ -594,17 +719,14 @@ const DashboardManageEventPage: React.FC = () => {
                               <p className="text-small font-medium">
                                 {ticketType.name}
                               </p>
-                              <Badge
-                                variant="outline"
-                                className="border-gray-600 text-white font-normal text-xs"
-                              >
-                                ${ticketType.price}
-                              </Badge>
+                               <Badge variant="outline" className="font-normal text-xs">
+                                 ${ticketType.price}
+                               </Badge>
                             </div>
                             {ticketType.totalAvailable && (
-                              <p className="text-gray-400">
-                                {ticketType.totalAvailable} tickets available
-                              </p>
+                               <p className="text-slate-500">
+                                 {ticketType.totalAvailable} tickets available
+                               </p>
                             )}
                           </div>
                           {/* Right */}
@@ -632,10 +754,13 @@ const DashboardManageEventPage: React.FC = () => {
                     );
                   })}
                 </CardContent>
-                <DialogContent className="bg-gray-900 border-gray-700 text-white">
+                {fieldErrors.ticketTypes && (
+                  <p className="px-6 pb-2 text-xs text-red-600">{fieldErrors.ticketTypes}</p>
+                )}
+                 <DialogContent className="border-slate-200 bg-white text-slate-900">
                   <DialogHeader>
                     <DialogTitle>Add Ticket Type</DialogTitle>
-                    <DialogDescription className="text-gray-400">
+                     <DialogDescription className="text-slate-500">
                       Please enter details of the ticket type
                     </DialogDescription>
                   </DialogHeader>
@@ -645,7 +770,7 @@ const DashboardManageEventPage: React.FC = () => {
                     <Label htmlFor="ticket-type-name">Name</Label>
                     <Input
                       id="ticket-type-name"
-                      className="bg-gray-800 border-gray-700"
+                        className="bg-white"
                       value={currentTicketType?.name}
                       onChange={(e) =>
                         setCurrentTicketType(
@@ -656,6 +781,9 @@ const DashboardManageEventPage: React.FC = () => {
                       }
                       placeholder="e.g General Admission, VIP, etc."
                     />
+                    {ticketTypeErrors.name && (
+                      <p className="text-xs text-red-600">{ticketTypeErrors.name}</p>
+                    )}
                   </div>
 
                   <div className="flex gap-4">
@@ -665,6 +793,7 @@ const DashboardManageEventPage: React.FC = () => {
                       <Input
                         id="ticket-type-price"
                         type="number"
+                        min={0}
                         value={currentTicketType?.price}
                         onChange={(e) =>
                           setCurrentTicketType(
@@ -676,8 +805,11 @@ const DashboardManageEventPage: React.FC = () => {
                               : undefined,
                           )
                         }
-                        className="bg-gray-800 border-gray-700"
+                         className="bg-white"
                       />
+                      {ticketTypeErrors.price && (
+                        <p className="text-xs text-red-600">{ticketTypeErrors.price}</p>
+                      )}
                     </div>
 
                     {/* Total Available */}
@@ -688,6 +820,7 @@ const DashboardManageEventPage: React.FC = () => {
                       <Input
                         id="ticket-type-total-available"
                         type="number"
+                        min={1}
                         value={currentTicketType?.totalAvailable}
                         onChange={(e) =>
                           setCurrentTicketType(
@@ -701,8 +834,11 @@ const DashboardManageEventPage: React.FC = () => {
                               : undefined,
                           )
                         }
-                        className="bg-gray-800 border-gray-700"
+                         className="bg-white"
                       />
+                      {ticketTypeErrors.totalAvailable && (
+                        <p className="text-xs text-red-600">{ticketTypeErrors.totalAvailable}</p>
+                      )}
                     </div>
                   </div>
 
@@ -711,7 +847,7 @@ const DashboardManageEventPage: React.FC = () => {
                     <Label htmlFor="ticket-type-description">Description</Label>
                     <Textarea
                       id="ticket-type-description"
-                      className="bg-gray-800 border-gray-700"
+                       className="bg-white"
                       value={currentTicketType?.description}
                       onChange={(e) =>
                         setCurrentTicketType(
@@ -724,14 +860,14 @@ const DashboardManageEventPage: React.FC = () => {
                         )
                       }
                     />
+                    {ticketTypeErrors.description && (
+                      <p className="text-xs text-red-600">{ticketTypeErrors.description}</p>
+                    )}
                   </div>
                   <DialogFooter>
-                    <Button
-                      className="bg-white text-black hover:bg-gray-300"
-                      onClick={handleSaveTicketType}
-                    >
-                      Save
-                    </Button>
+                     <Button onClick={handleSaveTicketType}>
+                       Save
+                     </Button>
                   </DialogFooter>
                 </DialogContent>
               </Dialog>
@@ -745,23 +881,23 @@ const DashboardManageEventPage: React.FC = () => {
               value={eventData.status}
               onValueChange={(value) => updateField("status", value)}
             >
-              <SelectTrigger className="w-[180px] bg-gray-900 border-gray-700 text-white">
+               <SelectTrigger className="w-[180px] bg-white">
                 <SelectValue placeholder="Select Event Status" />
               </SelectTrigger>
-              <SelectContent className="bg-gray-900 border-gray-700 text-white">
+               <SelectContent className="bg-white text-slate-900">
                 <SelectItem value={EventStatusEnum.DRAFT}>Draft</SelectItem>
                 <SelectItem value={EventStatusEnum.PUBLISHED}>
                   Published
                 </SelectItem>
               </SelectContent>
             </Select>
-            <p className="text-gray-400 text-xs">
+            <p className="text-slate-500 text-xs">
               Please select the status of the new event.
             </p>
           </div>
 
           {error && (
-            <Alert variant="destructive" className="bg-gray-900 border-red-700">
+            <Alert variant="destructive" className="border-red-300 bg-red-50 text-red-900">
               <AlertCircle className="h-4 w-4" />
               <AlertTitle>Error</AlertTitle>
               <AlertDescription>{error}</AlertDescription>
@@ -769,14 +905,14 @@ const DashboardManageEventPage: React.FC = () => {
           )}
 
           <div>
-            <Button onClick={handleFormSubmit}>
-              {isEditMode ? "Update" : "Submit"}
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? "Saving..." : isEditMode ? "Update" : "Submit"}
             </Button>
           </div>
         </form>
         {/* For Development Only */}
         {/* <p className="mt-8 font-mono text-white">{JSON.stringify(eventData)}</p> */}
-      </div>
+      </PageTransition>
     </div>
   );
 };

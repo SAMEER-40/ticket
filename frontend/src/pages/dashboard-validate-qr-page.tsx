@@ -1,30 +1,36 @@
 import { Button } from "@/components/ui/button";
+import { PageTransition } from "@/components/layout/page-transition";
 import { Input } from "@/components/ui/input";
+import NavBar from "@/components/nav-bar";
 import { useState } from "react";
 import { Scanner } from "@yudiel/react-qr-scanner";
 import {
   TicketValidationMethod,
   TicketValidationStatus,
 } from "@/domain/domain";
-import { AlertCircle, Check, X } from "lucide-react";
+import { AlertCircle, Check, ChevronLeft, X } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { validateTicket } from "@/lib/api";
 import { useAuth } from "react-oidc-context";
+import { useNavigate } from "react-router";
 
 const DashboardValidateQrPage: React.FC = () => {
   const { isLoading, user } = useAuth();
+  const navigate = useNavigate();
   const [isManual, setIsManual] = useState(false);
   const [data, setData] = useState<string | undefined>();
   const [error, setError] = useState<string | undefined>();
   const [validationStatus, setValidationStatus] = useState<
     TicketValidationStatus | undefined
   >();
+  const [manualError, setManualError] = useState<string | undefined>();
 
   const handleReset = () => {
     setIsManual(false);
     setData(undefined);
     setError(undefined);
     setValidationStatus(undefined);
+    setManualError(undefined);
   };
 
   const handleError = (err: unknown) => {
@@ -52,19 +58,38 @@ const DashboardValidateQrPage: React.FC = () => {
     }
   };
 
+  const handleManualSubmit = () => {
+    const trimmedData = (data ?? "").trim();
+    if (!trimmedData) {
+      setManualError("Please enter a ticket ID.");
+      return;
+    }
+
+    if (!/^[a-fA-F0-9-]{8,}$/.test(trimmedData)) {
+      setManualError("Ticket ID format looks invalid.");
+      return;
+    }
+
+    setManualError(undefined);
+    handleValidate(trimmedData, TicketValidationMethod.MANUAL);
+  };
+
   if (isLoading || !user?.access_token) {
-    <p>Loading...</p>;
+    return <p>Loading...</p>;
   }
 
   return (
-    <div className="min-h-screen bg-black text-white flex justify-center items-center">
-      <div
-        className="border border-gray-400 max-w-sm
-w-full p-4"
-      >
+    <div className="app-shell min-h-screen text-slate-900">
+      <NavBar />
+      <div className="mx-auto flex w-full max-w-sm justify-start px-4 pt-6">
+        <Button variant="outline" onClick={() => navigate(-1)}>
+          <ChevronLeft className="size-4" /> Back
+        </Button>
+      </div>
+      <PageTransition className="mx-auto mt-6 w-full max-w-sm border border-slate-300 bg-white/85 p-4 rounded-2xl shadow-sm">
         {error && (
-          <div className="min-h-screen bg-black text-white">
-            <Alert variant="destructive" className="bg-gray-900 border-red-700">
+          <div>
+            <Alert variant="destructive" className="border-red-300 bg-red-50 text-red-900">
               <AlertCircle className="h-4 w-4" />
               <AlertTitle>Error</AlertTitle>
               <AlertDescription>{error}</AlertDescription>
@@ -103,25 +128,30 @@ w-full p-4"
         {isManual ? (
           <div className="pb-8">
             <Input
-              className="w-full text-white text-lg mb-8"
-              onChange={(e) => setData(e.target.value)}
+              className="mb-8 w-full bg-white text-lg"
+              value={data ?? ""}
+              onChange={(e) => {
+                setData(e.target.value);
+                if (manualError) {
+                  setManualError(undefined);
+                }
+              }}
             />
+            {manualError && <p className="mb-3 text-sm text-red-600">{manualError}</p>}
             <Button
-              className="bg-purple-500 w-full h-[80px] hover:bg-purple-800"
-              onClick={() =>
-                handleValidate(data || "", TicketValidationMethod.MANUAL)
-              }
+              className="h-[80px] w-full"
+              onClick={handleManualSubmit}
             >
               Submit
             </Button>
           </div>
         ) : (
           <div>
-            <div className="border-white border-2 h-12 rounded-md font-mono flex justify-center items-center">
+            <div className="flex h-12 items-center justify-center rounded-md border-2 border-slate-300 bg-white font-mono">
               <span>{data || "Scan for Result"}</span>
             </div>
             <Button
-              className="bg-gray-900 hover:bg-gray-600 border-gray-500 border-2 w-full h-[80px] text-xl my-8"
+              className="my-8 h-[80px] w-full border-2 border-slate-300 bg-white text-xl text-slate-800 hover:bg-slate-100"
               onClick={() => setIsManual(true)}
             >
               Manual
@@ -130,12 +160,13 @@ w-full p-4"
         )}
 
         <Button
-          className="bg-gray-500 hover:bg-gray-800 w-full h-[80px] text-xl my-8"
+          variant="outline"
+          className="my-8 h-[80px] w-full text-xl"
           onClick={handleReset}
         >
           Reset
         </Button>
-      </div>
+      </PageTransition>
     </div>
   );
 };

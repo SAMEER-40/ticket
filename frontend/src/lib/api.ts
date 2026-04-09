@@ -13,6 +13,25 @@ import {
   UpdateEventRequest,
 } from "@/domain/domain";
 
+const parseResponseBody = async (response: Response): Promise<unknown> => {
+  const text = await response.text();
+
+  if (!text) {
+    return undefined;
+  }
+
+  const contentType = response.headers.get("content-type") ?? "";
+  if (!contentType.includes("application/json")) {
+    return text;
+  }
+
+  try {
+    return JSON.parse(text) as unknown;
+  } catch {
+    return text;
+  }
+};
+
 export const createEvent = async (
   accessToken: string,
   request: CreateEventRequest,
@@ -26,7 +45,7 @@ export const createEvent = async (
     body: JSON.stringify(request),
   });
 
-  const responseBody = await response.json();
+  const responseBody = await parseResponseBody(response);
 
   if (!response.ok) {
     if (isErrorResponse(responseBody)) {
@@ -52,7 +71,7 @@ export const updateEvent = async (
     body: JSON.stringify(request),
   });
 
-  const responseBody = await response.json();
+  const responseBody = await parseResponseBody(response);
 
   if (!response.ok) {
     if (isErrorResponse(responseBody)) {
@@ -76,7 +95,7 @@ export const listEvents = async (
     },
   });
 
-  const responseBody = await response.json();
+  const responseBody = await parseResponseBody(response);
 
   if (!response.ok) {
     if (isErrorResponse(responseBody)) {
@@ -102,7 +121,7 @@ export const getEvent = async (
     },
   });
 
-  const responseBody = await response.json();
+  const responseBody = await parseResponseBody(response);
 
   if (!response.ok) {
     if (isErrorResponse(responseBody)) {
@@ -129,7 +148,7 @@ export const deleteEvent = async (
   });
 
   if (!response.ok) {
-    const responseBody = await response.json();
+    const responseBody = await parseResponseBody(response);
     if (isErrorResponse(responseBody)) {
       throw new Error(responseBody.error);
     } else {
@@ -149,7 +168,7 @@ export const listPublishedEvents = async (
     },
   });
 
-  const responseBody = await response.json();
+  const responseBody = await parseResponseBody(response);
 
   if (!response.ok) {
     if (isErrorResponse(responseBody)) {
@@ -177,7 +196,7 @@ export const searchPublishedEvents = async (
     },
   );
 
-  const responseBody = await response.json();
+  const responseBody = await parseResponseBody(response);
 
   if (!response.ok) {
     if (isErrorResponse(responseBody)) {
@@ -201,7 +220,7 @@ export const getPublishedEvent = async (
     },
   });
 
-  const responseBody = await response.json();
+  const responseBody = await parseResponseBody(response);
 
   if (!response.ok) {
     if (isErrorResponse(responseBody)) {
@@ -232,7 +251,7 @@ export const purchaseTicket = async (
   );
 
   if (!response.ok) {
-    const responseBody = await response.json();
+    const responseBody = await parseResponseBody(response);
     if (isErrorResponse(responseBody)) {
       throw new Error(responseBody.error);
     } else {
@@ -254,7 +273,7 @@ export const listTickets = async (
     },
   });
 
-  const responseBody = await response.json();
+  const responseBody = await parseResponseBody(response);
 
   if (!response.ok) {
     if (isErrorResponse(responseBody)) {
@@ -280,7 +299,7 @@ export const getTicket = async (
     },
   });
 
-  const responseBody = await response.json();
+  const responseBody = await parseResponseBody(response);
 
   if (!response.ok) {
     if (isErrorResponse(responseBody)) {
@@ -325,7 +344,7 @@ export const validateTicket = async (
     body: JSON.stringify(request),
   });
 
-  const responseBody = await response.json();
+  const responseBody = await parseResponseBody(response);
 
   if (!response.ok) {
     if (isErrorResponse(responseBody)) {
@@ -336,5 +355,5 @@ export const validateTicket = async (
     }
   }
 
-  return responseBody as Promise<TicketValidationResponse>;
+  return responseBody as TicketValidationResponse;
 };

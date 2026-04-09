@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+@import url("https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,500;9..144,700&display=swap");
 
 @custom-variant dark (&:is(.dark *));
 
@@ -43,29 +44,29 @@
 
 :root {
   --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
+  --background: oklch(0.985 0.01 82);
+  --foreground: oklch(0.24 0.03 258);
+  --card: oklch(0.995 0.008 84);
+  --card-foreground: oklch(0.25 0.03 258);
+  --popover: oklch(0.995 0.008 84);
+  --popover-foreground: oklch(0.25 0.03 258);
+  --primary: oklch(0.54 0.18 260);
+  --primary-foreground: oklch(0.99 0.01 84);
+  --secondary: oklch(0.93 0.03 78);
+  --secondary-foreground: oklch(0.3 0.05 255);
+  --muted: oklch(0.955 0.018 84);
+  --muted-foreground: oklch(0.5 0.03 252);
+  --accent: oklch(0.84 0.11 74);
+  --accent-foreground: oklch(0.26 0.04 256);
   --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
+  --border: oklch(0.885 0.02 86);
+  --input: oklch(0.91 0.02 84);
+  --ring: oklch(0.54 0.18 260);
+  --chart-1: oklch(0.58 0.19 260);
+  --chart-2: oklch(0.71 0.14 190);
+  --chart-3: oklch(0.63 0.16 40);
+  --chart-4: oklch(0.79 0.13 78);
+  --chart-5: oklch(0.62 0.12 320);
   --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: oklch(0.145 0 0);
   --sidebar-primary: oklch(0.205 0 0);
@@ -116,5 +117,39 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-family: "Manrope", "Segoe UI", sans-serif;
+    background-image:
+      radial-gradient(circle at 12% -8%, color-mix(in oklab, var(--accent) 44%, transparent), transparent 34%),
+      radial-gradient(circle at 88% 2%, color-mix(in oklab, var(--primary) 28%, transparent), transparent 27%),
+      radial-gradient(circle at 50% 120%, color-mix(in oklab, oklch(0.75 0.16 335) 30%, transparent), transparent 30%);
+    background-attachment: fixed;
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: "Fraunces", Georgia, serif;
+  }
+
+  a,
+  button,
+  input,
+  textarea,
+  select {
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2;
+  }
+}
+
+@layer components {
+  .app-shell {
+    @apply min-h-screen bg-gradient-to-b from-amber-50/70 via-slate-50 to-violet-50/55 text-slate-900;
+  }
+
+  .page-wrap {
+    @apply mx-auto w-full max-w-6xl px-4 py-8 md:px-6 md:py-10;
+  }
+
+  .surface-card {
+    @apply rounded-2xl border border-white/70 bg-white/88 shadow-sm shadow-indigo-900/10 backdrop-blur;
   }
 }

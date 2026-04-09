@@ -4,7 +4,7 @@ services:
     # Using the latest PostgreSQL image
     image: postgres:latest
     ports:
-      - "5432:5432"
+      - "5433:5432"
     restart: always
     environment:
       POSTGRES_PASSWORD: changemeinprod!

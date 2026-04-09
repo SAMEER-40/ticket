@@ -1,4 +1,6 @@
 import NavBar from "@/components/nav-bar";
+import { PageHeader } from "@/components/layout/page-header";
+import { PageTransition } from "@/components/layout/page-transition";
 import { SimplePagination } from "@/components/simple-pagination";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
@@ -146,40 +148,38 @@ const DashboardListEventsPage: React.FC = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-black text-white">
-        <Alert variant="destructive" className="bg-gray-900 border-red-700">
+      <div className="app-shell">
+        <NavBar />
+        <div className="page-wrap">
+          <Alert variant="destructive" className="surface-card border-red-300 bg-red-50 text-red-900">
           <AlertCircle className="h-4 w-4" />
           <AlertTitle>Error</AlertTitle>
           <AlertDescription>{error}</AlertDescription>
         </Alert>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="bg-black min-h-screen text-white">
+    <div className="app-shell">
       <NavBar />
 
-      <div className="max-w-lg mx-auto px-4">
-        {/* Title */}
-        <div className="py-8 px-4 flex justify-between">
-          <div>
-            <h1 className="text-2xl font-bold">Your Events</h1>
-            <p>Events you have created</p>
-          </div>
-          <div>
+      <PageTransition className="page-wrap">
+        <PageHeader
+          title="Your Events"
+          description="Create, manage, and publish your event portfolio."
+          action={
             <Link to="/dashboard/events/create">
-              <Button className="bg-purple-700 hover:bg-purple-500 cursor-pointer">
-                Create Event
-              </Button>
+              <Button className="cursor-pointer">Create Event</Button>
             </Link>
-          </div>
-        </div>
+          }
+        />
 
         {/* Event Cards */}
-        <div className="space-y-2">
+        <div className="grid gap-4 md:grid-cols-2">
           {events?.content.map((eventItem) => (
-            <Card className="bg-gray-900 border-gray-700 text-white">
+            <Card className="surface-card h-full border-slate-200 text-slate-900">
               <CardHeader>
                 <div className="flex justify-between">
                   <h3 className="font-bold text-xl">{eventItem.name}</h3>
@@ -193,13 +193,13 @@ const DashboardListEventsPage: React.FC = () => {
               <CardContent className="space-y-4">
                 {/* Event Start & End */}
                 <div className="flex space-x-2">
-                  <Calendar className="h-5 w-5 text-gray-400" />
+                  <Calendar className="h-5 w-5 text-slate-500" />
                   <div>
                     <p className="font-medium">
                       {formatDate(eventItem.start)} to{" "}
                       {formatDate(eventItem.end)}
                     </p>
-                    <p className="text-gray-400">
+                    <p className="text-slate-600">
                       {formatTime(eventItem.start)} -{" "}
                       {formatTime(eventItem.end)}
                     </p>
@@ -207,30 +207,30 @@ const DashboardListEventsPage: React.FC = () => {
                 </div>
                 {/* Sales start and end */}
                 <div className="flex space-x-2">
-                  <Clock className="h-5 w-5 text-gray-400" />
+                  <Clock className="h-5 w-5 text-slate-500" />
                   <div>
                     <h4 className="font-medium">Sales Period</h4>
-                    <p className="text-gray-400">
+                    <p className="text-slate-600">
                       {formatDate(eventItem.salesStart)} to{" "}
                       {formatDate(eventItem.salesEnd)}
                     </p>
                   </div>
                 </div>
                 <div className="flex space-x-2">
-                  <MapPin className="h-5 w-5 text-gray-400" />
+                  <MapPin className="h-5 w-5 text-slate-500" />
                   <div>
                     <p className="font-medium">{eventItem.venue}</p>
                   </div>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <Tag className="h-5 w-5 text-gray-400" />
+                  <Tag className="h-5 w-5 text-slate-500" />
                   <div>
                     <h4 className="font-medium">Ticket Types</h4>
                     <ul>
                       {eventItem.ticketTypes.map((ticketType) => (
                         <li
                           key={ticketType.id}
-                          className="flex gap-2 text-gray-400"
+                          className="flex gap-2 text-slate-600"
                         >
                           <span>{ticketType.name}</span>
                           <span>${ticketType.price}</span>
@@ -244,14 +244,16 @@ const DashboardListEventsPage: React.FC = () => {
                 <Link to={`/dashboard/events/update/${eventItem.id}`}>
                   <Button
                     type="button"
-                    className="bg-gray-700 hover:bg-gray-500 cursor-pointer"
+                    variant="outline"
+                    className="cursor-pointer"
                   >
                     <Edit />
                   </Button>
                 </Link>
                 <Button
                   type="button"
-                  className="bg-red-700/80 hover:bg-red-500 cursor-pointer"
+                  variant="destructive"
+                  className="cursor-pointer"
                   onClick={() => handleOpenDeleteEventDialog(eventItem)}
                 >
                   <Trash />
@@ -260,7 +262,7 @@ const DashboardListEventsPage: React.FC = () => {
             </Card>
           ))}
         </div>
-      </div>
+      </PageTransition>
       <div className="flex justify-center py-8">
         {events && (
           <SimplePagination pagination={events} onPageChange={setPage} />
