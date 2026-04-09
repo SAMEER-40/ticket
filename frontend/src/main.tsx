@@ -105,8 +105,10 @@ const router = createBrowserRouter([
 ]);
 
 const oidcConfig = {
-  authority: "http://localhost:9090/realms/event-ticket-platform",
-  client_id: "event-ticket-platform-app",
+  authority:
+    import.meta.env.VITE_OIDC_AUTHORITY ??
+    "http://localhost:9090/realms/event-ticket-platform",
+  client_id: import.meta.env.VITE_OIDC_CLIENT_ID ?? "event-ticket-platform-app",
   redirect_uri: `${globalThis.location.origin}/callback`,
   post_logout_redirect_uri: globalThis.location.origin,
 };

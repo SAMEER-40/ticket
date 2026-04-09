@@ -27,6 +27,7 @@ public class SecurityConfig {
                 // Catch all rule
                 .anyRequest().authenticated())
         .csrf(csrf -> csrf.disable())
+        .cors(Customizer.withDefaults())
         .sessionManagement(session ->
             session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .oauth2ResourceServer(oauth2 ->
