@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { PageTransition } from "@/components/layout/page-transition";
+import { AppFooter } from "@/components/layout/app-footer";
 import { ArrowRight, BarChart3, CalendarCheck2, ShieldCheck, Ticket } from "lucide-react";
 import { useAuth } from "@/auth/auth-context";
 import { useNavigate } from "react-router";
@@ -137,6 +138,7 @@ const OrganizersLandingPage: React.FC = () => {
           ))}
         </div>
       </PageTransition>
+      <AppFooter />
     </div>
   );
 };

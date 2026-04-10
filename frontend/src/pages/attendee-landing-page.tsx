@@ -28,6 +28,7 @@ import { PublishedEventSummary, SpringBootPagination } from "@/domain/domain";
 import { listPublishedEvents, searchPublishedEvents } from "@/lib/api";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { PageTransition } from "@/components/layout/page-transition";
+import { AppFooter } from "@/components/layout/app-footer";
 import PublishedEventCard from "@/components/published-event-card";
 import { SimplePagination } from "@/components/simple-pagination";
 import { motion } from "framer-motion";
@@ -404,6 +405,7 @@ const AttendeeLandingPage: React.FC = () => {
         </div>
       </section>
       </PageTransition>
+      <AppFooter />
     </div>
   );
 };
